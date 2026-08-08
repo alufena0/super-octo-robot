@@ -40,7 +40,6 @@ function ProductsPage() {
     register,
     handleSubmit,
     reset,
-    setValue,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
