@@ -8,6 +8,7 @@ import {
   Delete,
   ParseIntPipe,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -18,19 +19,24 @@ import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 
-  @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.inventoryService.create(createProductDto);
+  @Get('stats')
+  stats() {
+    return this.inventoryService.stats();
   }
 
   @Get()
-  findAll() {
-    return this.inventoryService.findAll();
+  findAll(@Query('page') page = '1', @Query('limit') limit = '10') {
+    return this.inventoryService.findAll(Number(page), Number(limit));
   }
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.inventoryService.findOne(id);
+  }
+
+  @Post()
+  create(@Body() createProductDto: CreateProductDto) {
+    return this.inventoryService.create(createProductDto);
   }
 
   @Patch(':id')
