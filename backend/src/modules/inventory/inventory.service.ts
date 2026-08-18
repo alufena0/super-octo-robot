@@ -66,4 +66,19 @@ export class InventoryService {
       .size;
     return { total, stockValue, lowStock, avgMargin, categories };
   }
+
+  async findLowStock() {
+    const products = await this.prisma.product.findMany({
+      select: {
+        id: true,
+        name: true,
+        sku: true,
+        quantity: true,
+        minStock: true,
+        category: true,
+      },
+      orderBy: { quantity: 'asc' },
+    });
+    return products.filter((p) => p.quantity < p.minStock);
+  }
 }

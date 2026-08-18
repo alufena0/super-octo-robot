@@ -24,6 +24,11 @@ export class InventoryController {
     return this.inventoryService.stats();
   }
 
+  @Get('low-stock')
+  findLowStock() {
+    return this.inventoryService.findLowStock();
+  }
+
   @Get()
   findAll(@Query('page') page = '1', @Query('limit') limit = '10') {
     return this.inventoryService.findAll(Number(page), Number(limit));

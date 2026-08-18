@@ -58,6 +58,7 @@ export const productApi = {
   getAll: (page = 1, limit = 10) =>
     api.get<PaginatedProducts>('/products', { params: { page, limit } }),
   getStats: () => api.get<ProductStats>('/products/stats'),
+  getLowStock: () => api.get<Product[]>('/products/low-stock'),
   create: (data: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) =>
     api.post<Product>('/products', data),
   update: (

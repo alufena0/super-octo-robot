@@ -89,14 +89,20 @@ function DashboardContent() {
 
   const [stats, setStats] = useState<ProductStats | null>(null);
   const [recent, setRecent] = useState<Product[]>([]);
+  const [lowStockItems, setLowStockItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([productApi.getStats(), productApi.getAll(1, 5)])
-      .then(([statsRes, productsRes]) => {
+    Promise.all([
+      productApi.getStats(),
+      productApi.getAll(1, 5),
+      productApi.getLowStock(),
+    ])
+      .then(([statsRes, productsRes, lowStockRes]) => {
         setStats(statsRes.data);
         setRecent(productsRes.data.data);
+        setLowStockItems(lowStockRes.data);
         setLoading(false);
       })
       .catch(() => {
@@ -250,29 +256,27 @@ function DashboardContent() {
                 {t('dashboard.noAlerts')}
               </p>
             ) : (
-              recent
-                .filter((p) => p.quantity < p.minStock)
-                .map((p, i) => (
+              lowStockItems.map((p) => (
+                <div
+                  key={p.id}
+                  className={`flex items-start gap-3 px-5 py-3 border-b ${border} last:border-b-0 transition-colors ${theme === 'dark' ? 'hover:bg-[#22263a]' : 'hover:bg-[#f0f2f8]'}`}
+                >
                   <div
-                    key={i}
-                    className={`flex items-start gap-3 px-5 py-3 border-b ${border} last:border-b-0 transition-colors ${theme === 'dark' ? 'hover:bg-[#22263a]' : 'hover:bg-[#f0f2f8]'}`}
-                  >
-                    <div
-                      className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${p.quantity <= 0 ? 'bg-[#f87171]' : 'bg-[#fbbf24]'}`}
-                    />
-                    <div>
-                      <div className={`text-[13px] font-medium ${text}`}>
-                        {t('dashboard.alertCritical', { name: p.name })}
-                      </div>
-                      <div className={`text-[11px] mt-0.5 ${muted}`}>
-                        {t('dashboard.alertUnits', {
-                          quantity: p.quantity,
-                          min: p.minStock,
-                        })}
-                      </div>
+                    className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${p.quantity <= 0 ? 'bg-[#f87171]' : 'bg-[#fbbf24]'}`}
+                  />
+                  <div>
+                    <div className={`text-[13px] font-medium ${text}`}>
+                      {t('dashboard.alertCritical', { name: p.name })}
+                    </div>
+                    <div className={`text-[11px] mt-0.5 ${muted}`}>
+                      {t('dashboard.alertUnits', {
+                        quantity: p.quantity,
+                        min: p.minStock,
+                      })}
                     </div>
                   </div>
-                ))
+                </div>
+              ))
             )}
           </div>
         </div>
