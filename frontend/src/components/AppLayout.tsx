@@ -1,5 +1,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n/index';
 
 // ---------------------------------------------------------------------------
 // Theme context
@@ -21,39 +23,58 @@ export function useTheme() {
 // ---------------------------------------------------------------------------
 
 interface NavItem {
-  label: string;
+  labelKey: string;
   icon: string;
   path: string;
   disabled?: boolean;
 }
 
 interface NavGroup {
-  section: string;
+  sectionKey: string;
   items: NavItem[];
 }
 
 const navGroups: NavGroup[] = [
   {
-    section: 'Principal',
+    sectionKey: 'nav.sections.main',
     items: [
-      { label: 'Dashboard', icon: '⬡', path: '/' },
-      { label: 'Produtos', icon: '📦', path: '/products' },
+      { labelKey: 'nav.dashboard', icon: '⬡', path: '/' },
+      { labelKey: 'nav.products', icon: '📦', path: '/products' },
     ],
   },
   {
-    section: 'Gestão',
+    sectionKey: 'nav.sections.management',
     items: [
-      { label: 'Vendas', icon: '🛒', path: '/sales', disabled: true },
-      { label: 'Financeiro', icon: '💰', path: '/financial', disabled: true },
-      { label: 'Relatórios', icon: '📊', path: '/reports', disabled: true },
+      { labelKey: 'nav.sales', icon: '🛒', path: '/sales', disabled: true },
+      {
+        labelKey: 'nav.financial',
+        icon: '💰',
+        path: '/financial',
+        disabled: true,
+      },
+      { labelKey: 'nav.reports', icon: '📊', path: '/reports', disabled: true },
     ],
   },
   {
-    section: 'Sistema',
+    sectionKey: 'nav.sections.system',
     items: [
-      { label: 'Configurações', icon: '⚙️', path: '/settings', disabled: true },
+      {
+        labelKey: 'nav.settings',
+        icon: '⚙️',
+        path: '/settings',
+        disabled: true,
+      },
     ],
   },
+];
+
+// ---------------------------------------------------------------------------
+// Lang selector
+// ---------------------------------------------------------------------------
+
+const langs = [
+  { code: 'pt-BR', label: 'PT' },
+  { code: 'en-US', label: 'EN' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -71,8 +92,13 @@ export default function AppLayout({
   title,
   subtitle,
 }: AppLayoutProps) {
+  const { t } = useTranslation();
+
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem('erp-theme') as Theme) ?? 'dark',
+  );
+  const [lang, setLang] = useState(
+    () => localStorage.getItem('erp-lang') ?? 'pt-BR',
   );
 
   const navigate = useNavigate();
@@ -84,6 +110,12 @@ export default function AppLayout({
   }, [theme]);
 
   const toggle = () => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+
+  const switchLang = (code: string) => {
+    setLang(code);
+    localStorage.setItem('erp-lang', code);
+    i18n.changeLanguage(code);
+  };
 
   const user = (() => {
     try {
@@ -148,9 +180,9 @@ export default function AppLayout({
           {/* Nav */}
           <nav className="flex-1 overflow-y-auto px-2 py-3 flex flex-col gap-1">
             {navGroups.map((group) => (
-              <div key={group.section}>
+              <div key={group.sectionKey}>
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-[#8892a4] px-2 pt-3 pb-1">
-                  {group.section}
+                  {t(group.sectionKey)}
                 </div>
                 {group.items.map((item) => {
                   const active = location.pathname === item.path;
@@ -174,7 +206,7 @@ export default function AppLayout({
                       <span className="w-5 text-center text-[15px]">
                         {item.icon}
                       </span>
-                      {item.label}
+                      {t(item.labelKey)}
                     </button>
                   );
                 })}
@@ -211,7 +243,7 @@ export default function AppLayout({
                   : 'border-[#d0d4e8] text-[#5a6378] hover:bg-[#e8eaf2] hover:text-[#1a1d27]'
               }`}
             >
-              <span>↩</span> Sair
+              <span>↩</span> {t('auth.logout')}
             </button>
           </div>
         </aside>
@@ -238,16 +270,42 @@ export default function AppLayout({
                 </div>
               )}
             </div>
-            <button
-              onClick={toggle}
-              className={`px-3 py-1.5 rounded-lg text-[12px] border cursor-pointer transition-colors ${
-                theme === 'dark'
-                  ? 'bg-[#22263a] border-[#2a2f45] text-[#e2e8f0] hover:bg-[#2a2f45]'
-                  : 'bg-[#e8eaf2] border-[#d0d4e8] text-[#1a1d27] hover:bg-[#d0d4e8]'
-              }`}
-            >
-              {theme === 'dark' ? '☀ Claro' : '☾ Escuro'}
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Lang switcher */}
+              <div
+                className={`flex rounded-lg border overflow-hidden ${
+                  theme === 'dark' ? 'border-[#2a2f45]' : 'border-[#d0d4e8]'
+                }`}
+              >
+                {langs.map((l) => (
+                  <button
+                    key={l.code}
+                    onClick={() => switchLang(l.code)}
+                    className={`px-3 py-1.5 text-[11px] font-semibold cursor-pointer transition-colors ${
+                      lang === l.code
+                        ? 'bg-[#4f8cff] text-white'
+                        : theme === 'dark'
+                          ? 'bg-[#22263a] text-[#8892a4] hover:text-[#e2e8f0]'
+                          : 'bg-[#e8eaf2] text-[#5a6378] hover:text-[#1a1d27]'
+                    }`}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Theme toggle */}
+              <button
+                onClick={toggle}
+                className={`px-3 py-1.5 rounded-lg text-[12px] border cursor-pointer transition-colors ${
+                  theme === 'dark'
+                    ? 'bg-[#22263a] border-[#2a2f45] text-[#e2e8f0] hover:bg-[#2a2f45]'
+                    : 'bg-[#e8eaf2] border-[#d0d4e8] text-[#1a1d27] hover:bg-[#d0d4e8]'
+                }`}
+              >
+                {theme === 'dark' ? t('theme.light') : t('theme.dark')}
+              </button>
+            </div>
           </header>
 
           {/* Content */}

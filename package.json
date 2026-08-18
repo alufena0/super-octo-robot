@@ -1,0 +1,25 @@
+{
+  "name": "meu-erp-sistema",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c cyan,magenta \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:frontend": "cd frontend && npm run dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alufena0/super-octo-robot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alufena0/super-octo-robot/issues"
+  },
+  "homepage": "https://github.com/alufena0/super-octo-robot#readme",
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}

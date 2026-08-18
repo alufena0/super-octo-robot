@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { productApi, Product } from '../services/api';
 import AppLayout, { useTheme } from '../components/AppLayout';
 
@@ -10,15 +11,12 @@ import AppLayout, { useTheme } from '../components/AppLayout';
 // ---------------------------------------------------------------------------
 
 const productSchema = z.object({
-  name: z.string().min(2, 'Nome precisa ter pelo menos 2 caracteres'),
-  sku: z.string().min(1, 'SKU é obrigatório'),
-  price: z.coerce.number().min(0.01, 'Preço deve ser maior que zero'),
-  cost: z.coerce.number().min(0, 'Custo não pode ser negativo'),
-  quantity: z.coerce.number().int().min(0, 'Quantidade não pode ser negativa'),
-  minStock: z.coerce
-    .number()
-    .int()
-    .min(0, 'Estoque mínimo não pode ser negativo'),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  sku: z.string().min(1, 'SKU is required'),
+  price: z.coerce.number().min(0.01, 'Price must be greater than zero'),
+  cost: z.coerce.number().min(0, 'Cost cannot be negative'),
+  quantity: z.coerce.number().int().min(0, 'Quantity cannot be negative'),
+  minStock: z.coerce.number().int().min(0, 'Min stock cannot be negative'),
   category: z.string().optional(),
   description: z.string().optional(),
 });
@@ -26,17 +24,22 @@ const productSchema = z.object({
 type ProductFormData = z.infer<typeof productSchema>;
 
 // ---------------------------------------------------------------------------
-// Inner component (needs theme context from AppLayout)
+// ProductsContent
 // ---------------------------------------------------------------------------
 
 function ProductsContent() {
   const { theme } = useTheme();
+  const { t } = useTranslation();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 10;
 
   const {
     register,
@@ -57,23 +60,25 @@ function ProductsContent() {
     },
   });
 
-  const loadProducts = () => {
+  const loadProducts = (p = page) => {
     setLoading(true);
     productApi
-      .getAll()
+      .getAll(p, limit)
       .then((res) => {
-        setProducts(res.data);
+        setProducts(res.data.data);
+        setTotal(res.data.total);
+        setTotalPages(res.data.totalPages);
         setLoading(false);
       })
       .catch(() => {
-        setError('Falha ao conectar com o backend.');
+        setError(t('common.errorConnect'));
         setLoading(false);
       });
   };
 
   useEffect(() => {
-    loadProducts();
-  }, []);
+    loadProducts(page);
+  }, [page]);
 
   const openCreate = () => {
     setEditingId(null);
@@ -106,13 +111,15 @@ function ProductsContent() {
   };
 
   const handleDelete = (id: number, name: string) => {
-    if (!window.confirm(`Excluir "${name}"?`)) return;
+    if (!window.confirm(t('common.confirmDelete', { name }))) return;
     productApi
       .delete(id)
-      .then(() => loadProducts())
+      .then(() => loadProducts(page))
       .catch((err) =>
         alert(
-          'Erro ao excluir: ' + (err.response?.data?.message ?? err.message),
+          t('common.errorDelete', {
+            message: err.response?.data?.message ?? err.message,
+          }),
         ),
       );
   };
@@ -126,11 +133,13 @@ function ProductsContent() {
         reset();
         setShowForm(false);
         setEditingId(null);
-        loadProducts();
+        loadProducts(page);
       })
       .catch((err) =>
         alert(
-          'Erro ao salvar: ' + (err.response?.data?.message ?? err.message),
+          t('common.errorSave', {
+            message: err.response?.data?.message ?? err.message,
+          }),
         ),
       );
   };
@@ -150,7 +159,6 @@ function ProductsContent() {
         : `${border} focus:outline-none focus:ring-1 focus:ring-[#4f8cff]`
     }`;
 
-  if (loading) return <p className={muted}>Carregando produtos...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
@@ -159,13 +167,13 @@ function ProductsContent() {
       <div className="flex items-center justify-between">
         <p className={muted}>
           Total de produtos:{' '}
-          <span className={`font-semibold ${text}`}>{products.length}</span>
+          <span className={`font-semibold ${text}`}>{total}</span>
         </p>
         <button
           onClick={openCreate}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#4f8cff] hover:bg-[#3a7aef] text-white text-sm font-medium cursor-pointer transition-colors"
         >
-          + Novo Produto
+          {t('products.newProduct')}
         </button>
       </div>
 
@@ -173,12 +181,16 @@ function ProductsContent() {
       {showForm && (
         <div className={`${surface} border ${border} rounded-xl p-6`}>
           <h3 className={`text-[15px] font-semibold mb-4 ${text}`}>
-            {editingId ? 'Editar Produto' : 'Novo Produto'}
+            {editingId
+              ? t('products.editProductTitle')
+              : t('products.newProductTitle')}
           </h3>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className={`text-xs font-medium ${muted}`}>Nome *</label>
+                <label className={`text-xs font-medium ${muted}`}>
+                  {t('products.form.name')}
+                </label>
                 <input
                   {...register('name')}
                   className={inputCls(!!errors.name)}
@@ -189,9 +201,10 @@ function ProductsContent() {
                   </span>
                 )}
               </div>
-
               <div className="flex flex-col gap-1">
-                <label className={`text-xs font-medium ${muted}`}>SKU *</label>
+                <label className={`text-xs font-medium ${muted}`}>
+                  {t('products.form.sku')}
+                </label>
                 <input
                   {...register('sku')}
                   className={inputCls(!!errors.sku)}
@@ -202,10 +215,9 @@ function ProductsContent() {
                   </span>
                 )}
               </div>
-
               <div className="flex flex-col gap-1">
                 <label className={`text-xs font-medium ${muted}`}>
-                  Preço de Venda *
+                  {t('products.form.salePrice')}
                 </label>
                 <input
                   type="number"
@@ -219,10 +231,9 @@ function ProductsContent() {
                   </span>
                 )}
               </div>
-
               <div className="flex flex-col gap-1">
                 <label className={`text-xs font-medium ${muted}`}>
-                  Custo *
+                  {t('products.form.cost')}
                 </label>
                 <input
                   type="number"
@@ -236,10 +247,9 @@ function ProductsContent() {
                   </span>
                 )}
               </div>
-
               <div className="flex flex-col gap-1">
                 <label className={`text-xs font-medium ${muted}`}>
-                  Quantidade *
+                  {t('products.form.quantity')}
                 </label>
                 <input
                   type="number"
@@ -252,10 +262,9 @@ function ProductsContent() {
                   </span>
                 )}
               </div>
-
               <div className="flex flex-col gap-1">
                 <label className={`text-xs font-medium ${muted}`}>
-                  Estoque Mínimo *
+                  {t('products.form.minStock')}
                 </label>
                 <input
                   type="number"
@@ -268,17 +277,15 @@ function ProductsContent() {
                   </span>
                 )}
               </div>
-
               <div className="flex flex-col gap-1">
                 <label className={`text-xs font-medium ${muted}`}>
-                  Categoria
+                  {t('products.form.category')}
                 </label>
                 <input {...register('category')} className={inputCls(false)} />
               </div>
-
               <div className="flex flex-col gap-1 col-span-2">
                 <label className={`text-xs font-medium ${muted}`}>
-                  Descrição
+                  {t('products.form.description')}
                 </label>
                 <textarea
                   {...register('description')}
@@ -287,13 +294,12 @@ function ProductsContent() {
                 />
               </div>
             </div>
-
             <div className="flex gap-3 mt-5">
               <button
                 type="submit"
                 className="px-5 py-2 rounded-lg bg-[#34d399] hover:bg-[#28c48a] text-[#0f1117] text-sm font-semibold cursor-pointer transition-colors"
               >
-                {editingId ? 'Atualizar' : 'Salvar'}
+                {editingId ? t('common.update') : t('common.save')}
               </button>
               <button
                 type="button"
@@ -302,9 +308,9 @@ function ProductsContent() {
                   setEditingId(null);
                   reset();
                 }}
-                className={`px-5 py-2 rounded-lg border text-sm cursor-pointer transition-colors ${border} ${muted} hover:${text}`}
+                className={`px-5 py-2 rounded-lg border text-sm cursor-pointer transition-colors ${border} ${muted}`}
               >
-                Cancelar
+                {t('common.cancel')}
               </button>
             </div>
           </form>
@@ -312,8 +318,10 @@ function ProductsContent() {
       )}
 
       {/* Table */}
-      {products.length === 0 ? (
-        <p className={muted}>Nenhum produto cadastrado ainda.</p>
+      {loading ? (
+        <p className={muted}>{t('common.loading')}</p>
+      ) : products.length === 0 ? (
+        <p className={muted}>{t('products.noProducts')}</p>
       ) : (
         <div
           className={`${surface} border ${border} rounded-xl overflow-hidden`}
@@ -321,21 +329,23 @@ function ProductsContent() {
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className={surface2}>
-                {[
-                  'ID',
-                  'Nome',
-                  'SKU',
-                  'Preço',
-                  'Qtd',
-                  'Mín',
-                  'Categoria',
-                  'Ações',
-                ].map((h) => (
+                {(
+                  [
+                    'table.id',
+                    'table.name',
+                    'table.sku',
+                    'table.price',
+                    'table.qty',
+                    'table.min',
+                    'table.category',
+                    'table.actions',
+                  ] as const
+                ).map((k) => (
                   <th
-                    key={h}
+                    key={k}
                     className={`px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide ${muted} border-b ${border}`}
                   >
-                    {h}
+                    {t(`products.${k}`)}
                   </th>
                 ))}
               </tr>
@@ -364,7 +374,7 @@ function ProductsContent() {
                         {p.name}
                         {low && (
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 uppercase tracking-wide">
-                            Estoque baixo
+                            {t('products.stock.badge')}
                           </span>
                         )}
                       </div>
@@ -390,13 +400,13 @@ function ProductsContent() {
                           onClick={() => openEdit(p)}
                           className="px-3 py-1.5 rounded-lg bg-[#4f8cff22] text-[#4f8cff] hover:bg-[#4f8cff33] text-xs font-medium cursor-pointer transition-colors"
                         >
-                          Editar
+                          {t('common.edit')}
                         </button>
                         <button
                           onClick={() => handleDelete(p.id, p.name)}
                           className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-medium cursor-pointer transition-colors"
                         >
-                          Excluir
+                          {t('common.delete')}
                         </button>
                       </div>
                     </td>
@@ -405,6 +415,31 @@ function ProductsContent() {
               })}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          <div
+            className={`flex items-center justify-between px-4 py-3 border-t ${border}`}
+          >
+            <span className={`text-xs ${muted}`}>
+              {t('products.pagination.info', { page, total: totalPages })}
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className={`px-3 py-1.5 rounded-lg text-xs border transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${border} ${muted} ${theme === 'dark' ? 'hover:bg-[#22263a]' : 'hover:bg-[#f0f2f8]'}`}
+              >
+                {t('products.pagination.previous')}
+              </button>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className={`px-3 py-1.5 rounded-lg text-xs border transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${border} ${muted} ${theme === 'dark' ? 'hover:bg-[#22263a]' : 'hover:bg-[#f0f2f8]'}`}
+              >
+                {t('products.pagination.next')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -416,8 +451,9 @@ function ProductsContent() {
 // ---------------------------------------------------------------------------
 
 export default function ProductsPage() {
+  const { t } = useTranslation();
   return (
-    <AppLayout title="Produtos" subtitle="Gestão de estoque">
+    <AppLayout title={t('products.title')} subtitle={t('products.subtitle')}>
       <ProductsContent />
     </AppLayout>
   );

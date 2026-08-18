@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
-import { productApi, Product } from '../services/api';
+import { useTranslation } from 'react-i18next';
+import { productApi, Product, ProductStats } from '../services/api';
 import AppLayout, { useTheme } from '../components/AppLayout';
 import { useNavigate } from 'react-router-dom';
-
-// ---------------------------------------------------------------------------
-// KPI Card
-// ---------------------------------------------------------------------------
 
 interface KpiCardProps {
   label: string;
@@ -17,21 +14,18 @@ interface KpiCardProps {
 
 function KpiCard({ label, value, sub, tag, tagColor }: KpiCardProps) {
   const { theme } = useTheme();
-
   const surface =
     theme === 'dark'
       ? 'bg-[#1a1d27] border-[#2a2f45]'
       : 'bg-white border-[#d0d4e8]';
   const text = theme === 'dark' ? 'text-[#e2e8f0]' : 'text-[#1a1d27]';
   const muted = theme === 'dark' ? 'text-[#8892a4]' : 'text-[#5a6378]';
-
   const accent = {
     blue: { bar: 'bg-[#4f8cff]', tag: 'bg-[#4f8cff22] text-[#4f8cff]' },
     green: { bar: 'bg-[#34d399]', tag: 'bg-[#34d39922] text-[#34d399]' },
     yellow: { bar: 'bg-[#fbbf24]', tag: 'bg-[#fbbf2422] text-[#fbbf24]' },
     red: { bar: 'bg-[#f87171]', tag: 'bg-[#f8717122] text-[#f87171]' },
   }[tagColor];
-
   return (
     <div
       className={`relative border rounded-xl p-5 overflow-hidden ${surface}`}
@@ -55,10 +49,6 @@ function KpiCard({ label, value, sub, tag, tagColor }: KpiCardProps) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Stock badge
-// ---------------------------------------------------------------------------
-
 function StockBadge({
   quantity,
   minStock,
@@ -66,52 +56,51 @@ function StockBadge({
   quantity: number;
   minStock: number;
 }) {
+  const { t } = useTranslation();
   if (quantity <= 0)
     return (
       <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#f8717122] text-[#f87171]">
-        ● Zerado
+        {t('products.stock.zero')}
       </span>
     );
   if (quantity < minStock)
     return (
       <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#f8717122] text-[#f87171]">
-        ● Baixo {quantity}
+        {t('products.stock.low', { qty: quantity })}
       </span>
     );
   if (quantity === minStock)
     return (
       <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#fbbf2422] text-[#fbbf24]">
-        ● Mín {quantity}
+        {t('products.stock.min', { qty: quantity })}
       </span>
     );
   return (
     <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#34d39922] text-[#34d399]">
-      ● OK {quantity}
+      {t('products.stock.ok', { qty: quantity })}
     </span>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Dashboard content
-// ---------------------------------------------------------------------------
-
 function DashboardContent() {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const [products, setProducts] = useState<Product[]>([]);
+  const [stats, setStats] = useState<ProductStats | null>(null);
+  const [recent, setRecent] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    productApi
-      .getAll()
-      .then((res) => {
-        setProducts(res.data);
+    Promise.all([productApi.getStats(), productApi.getAll(1, 5)])
+      .then(([statsRes, productsRes]) => {
+        setStats(statsRes.data);
+        setRecent(productsRes.data.data);
         setLoading(false);
       })
       .catch(() => {
-        setError('Falha ao conectar com o backend.');
+        setError(t('common.errorConnect'));
         setLoading(false);
       });
   }, []);
@@ -125,103 +114,57 @@ function DashboardContent() {
   const text = theme === 'dark' ? 'text-[#e2e8f0]' : 'text-[#1a1d27]';
   const muted = theme === 'dark' ? 'text-[#8892a4]' : 'text-[#5a6378]';
 
-  if (loading) return <p className={muted}>Carregando...</p>;
+  if (loading) return <p className={muted}>{t('common.loading')}</p>;
   if (error) return <p className="text-red-500">{error}</p>;
+  if (!stats) return null;
 
-  // ---- KPI calculations ----
-  const total = products.length;
-  const stockValue = products.reduce((acc, p) => acc + p.cost * p.quantity, 0);
-  const lowStock = products.filter((p) => p.quantity < p.minStock).length;
-  const avgMargin =
-    total === 0
-      ? 0
-      : (products.reduce(
-          (acc, p) => acc + (p.price > 0 ? (p.price - p.cost) / p.price : 0),
-          0,
-        ) /
-          total) *
-        100;
-
-  const recent = [...products]
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    )
-    .slice(0, 5);
-
-  // ---- alerts ----
-  const alerts: { color: string; title: string; sub: string }[] = [
-    ...products
-      .filter((p) => p.quantity <= 0)
-      .map((p) => ({
-        color: 'bg-[#f87171]',
-        title: `${p.name} — sem estoque`,
-        sub: `0 unidades`,
-      })),
-    ...products
-      .filter((p) => p.quantity > 0 && p.quantity < p.minStock)
-      .map((p) => ({
-        color: 'bg-[#f87171]',
-        title: `${p.name} — estoque crítico`,
-        sub: `${p.quantity} unidades · mínimo: ${p.minStock}`,
-      })),
-    ...products
-      .filter((p) => p.quantity === p.minStock)
-      .map((p) => ({
-        color: 'bg-[#fbbf24]',
-        title: `${p.name} — no limite mínimo`,
-        sub: `${p.quantity} unidades · mínimo: ${p.minStock}`,
-      })),
-    ...products
-      .filter((p) => !p.category)
-      .map((p) => ({
-        color: 'bg-[#4f8cff]',
-        title: `${p.name} — sem categoria`,
-        sub: 'Recomendado para relatórios',
-      })),
-  ];
+  const stockValueFmt =
+    stats.stockValue >= 1000
+      ? `R$${(stats.stockValue / 1000).toFixed(1)}k`
+      : `R$${stats.stockValue.toFixed(0)}`;
 
   return (
     <div className="flex flex-col gap-6">
-      {/* KPI grid */}
       <div className="grid grid-cols-4 gap-4">
         <KpiCard
-          label="Total de Produtos"
-          value={String(total)}
-          sub={`${new Set(products.map((p) => p.category).filter(Boolean)).size} categorias`}
-          tag={`${total} cadastrados`}
+          label={t('dashboard.kpi.totalProducts')}
+          value={String(stats.total)}
+          sub={t('dashboard.kpi.categories', { count: stats.categories })}
+          tag={t('dashboard.kpi.registered', { count: stats.total })}
           tagColor="blue"
         />
         <KpiCard
-          label="Valor em Estoque"
-          value={`R$${stockValue >= 1000 ? (stockValue / 1000).toFixed(1) + 'k' : stockValue.toFixed(0)}`}
-          sub="preço de custo"
-          tag="estoque atual"
+          label={t('dashboard.kpi.stockValue')}
+          value={stockValueFmt}
+          sub={t('dashboard.kpi.costPrice')}
+          tag={t('dashboard.kpi.currentStock')}
           tagColor="green"
         />
         <KpiCard
-          label="Estoque Baixo"
-          value={String(lowStock)}
-          sub="abaixo do mínimo"
+          label={t('dashboard.kpi.lowStock')}
+          value={String(stats.lowStock)}
+          sub={t('dashboard.kpi.belowMin')}
           tag={
-            lowStock === 0
-              ? 'tudo ok'
-              : `${lowStock} requer${lowStock > 1 ? 'em' : ''} atenção`
+            stats.lowStock === 0
+              ? t('dashboard.kpi.allOk')
+              : t('dashboard.kpi.needsAttention', { count: stats.lowStock })
           }
-          tagColor={lowStock === 0 ? 'green' : 'yellow'}
+          tagColor={stats.lowStock === 0 ? 'green' : 'yellow'}
         />
         <KpiCard
-          label="Margem Média"
-          value={`${avgMargin.toFixed(0)}%`}
-          sub="preço – custo / preço"
-          tag={avgMargin >= 45 ? '▲ meta atingida' : `▼ meta: 45%`}
-          tagColor={avgMargin >= 45 ? 'green' : 'red'}
+          label={t('dashboard.kpi.avgMargin')}
+          value={`${stats.avgMargin.toFixed(0)}%`}
+          sub={t('dashboard.kpi.priceFormula')}
+          tag={
+            stats.avgMargin >= 45
+              ? t('dashboard.kpi.goalReached')
+              : t('dashboard.kpi.goalMissed')
+          }
+          tagColor={stats.avgMargin >= 45 ? 'green' : 'red'}
         />
       </div>
 
-      {/* Bottom grid */}
       <div className="grid grid-cols-3 gap-4">
-        {/* Recent products table */}
         <div
           className={`col-span-2 border rounded-xl overflow-hidden ${surface}`}
         >
@@ -229,24 +172,31 @@ function DashboardContent() {
             className={`flex items-center justify-between px-5 py-4 border-b ${border}`}
           >
             <span className={`text-[14px] font-semibold ${text}`}>
-              Produtos recentes
+              {t('dashboard.recentProducts')}
             </span>
             <button
               onClick={() => navigate('/products')}
               className="text-[12px] text-[#4f8cff] hover:underline cursor-pointer"
             >
-              Ver todos →
+              {t('dashboard.viewAll')}
             </button>
           </div>
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className={surface2}>
-                {['Nome', 'SKU', 'Preço', 'Estoque'].map((h) => (
+                {(
+                  [
+                    'dashboard.recentProducts',
+                    'products.table.sku',
+                    'products.table.price',
+                    'products.table.qty',
+                  ] as const
+                ).map((k, i) => (
                   <th
-                    key={h}
+                    key={i}
                     className={`px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide ${muted} border-b ${border}`}
                   >
-                    {h}
+                    {i === 0 ? t('products.table.name') : t(k)}
                   </th>
                 ))}
               </tr>
@@ -275,7 +225,7 @@ function DashboardContent() {
                     colSpan={4}
                     className={`px-5 py-8 text-center text-sm ${muted}`}
                   >
-                    Nenhum produto cadastrado ainda.
+                    {t('dashboard.noProducts')}
                   </td>
                 </tr>
               )}
@@ -283,38 +233,47 @@ function DashboardContent() {
           </table>
         </div>
 
-        {/* Alerts */}
         <div className={`border rounded-xl overflow-hidden ${surface}`}>
           <div
             className={`flex items-center justify-between px-5 py-4 border-b ${border}`}
           >
-            <span className={`text-[14px] font-semibold ${text}`}>Alertas</span>
+            <span className={`text-[14px] font-semibold ${text}`}>
+              {t('dashboard.alerts')}
+            </span>
             <span className={`text-[12px] ${muted}`}>
-              {alerts.length} ativo{alerts.length !== 1 ? 's' : ''}
+              {t('dashboard.activeAlerts', { count: stats.lowStock })}
             </span>
           </div>
           <div>
-            {alerts.length === 0 && (
+            {stats.lowStock === 0 ? (
               <p className={`px-5 py-8 text-center text-sm ${muted}`}>
-                Nenhum alerta no momento.
+                {t('dashboard.noAlerts')}
               </p>
-            )}
-            {alerts.map((a, i) => (
-              <div
-                key={i}
-                className={`flex items-start gap-3 px-5 py-3 border-b ${border} last:border-b-0 transition-colors ${theme === 'dark' ? 'hover:bg-[#22263a]' : 'hover:bg-[#f0f2f8]'}`}
-              >
-                <div
-                  className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${a.color}`}
-                />
-                <div>
-                  <div className={`text-[13px] font-medium ${text}`}>
-                    {a.title}
+            ) : (
+              recent
+                .filter((p) => p.quantity < p.minStock)
+                .map((p, i) => (
+                  <div
+                    key={i}
+                    className={`flex items-start gap-3 px-5 py-3 border-b ${border} last:border-b-0 transition-colors ${theme === 'dark' ? 'hover:bg-[#22263a]' : 'hover:bg-[#f0f2f8]'}`}
+                  >
+                    <div
+                      className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${p.quantity <= 0 ? 'bg-[#f87171]' : 'bg-[#fbbf24]'}`}
+                    />
+                    <div>
+                      <div className={`text-[13px] font-medium ${text}`}>
+                        {t('dashboard.alertCritical', { name: p.name })}
+                      </div>
+                      <div className={`text-[11px] mt-0.5 ${muted}`}>
+                        {t('dashboard.alertUnits', {
+                          quantity: p.quantity,
+                          min: p.minStock,
+                        })}
+                      </div>
+                    </div>
                   </div>
-                  <div className={`text-[11px] mt-0.5 ${muted}`}>{a.sub}</div>
-                </div>
-              </div>
-            ))}
+                ))
+            )}
           </div>
         </div>
       </div>
@@ -322,13 +281,10 @@ function DashboardContent() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Page export
-// ---------------------------------------------------------------------------
-
 export default function DashboardPage() {
+  const { t } = useTranslation();
   return (
-    <AppLayout title="Dashboard" subtitle="Visão geral do sistema">
+    <AppLayout title={t('dashboard.title')} subtitle={t('dashboard.subtitle')}>
       <DashboardContent />
     </AppLayout>
   );

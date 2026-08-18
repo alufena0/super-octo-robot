@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authApi } from '../services/api';
 
-function LoginPage() {
+export default function LoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState('admin@erp.com');
   const [password, setPassword] = useState('admin123');
@@ -13,7 +15,6 @@ function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
-
     authApi
       .login(email, password)
       .then((res) => {
@@ -21,113 +22,70 @@ function LoginPage() {
         localStorage.setItem('user', JSON.stringify(res.data.user));
         navigate('/');
       })
-      .catch((err) => {
-        setError(err.response?.data?.message || 'Erro ao fazer login');
-      })
+      .catch((err) =>
+        setError(err.response?.data?.message || t('auth.loginError')),
+      )
       .finally(() => setLoading(false));
   };
 
+  const inputCls =
+    'w-full px-3 py-2 mt-1 rounded-lg border border-[#d0d4e8] text-sm focus:outline-none focus:ring-1 focus:ring-[#4f8cff]';
+
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#f5f5f5',
-        fontFamily: 'sans-serif',
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          background: 'white',
-          padding: '2.5rem',
-          borderRadius: '8px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-          width: '360px',
-        }}
-      >
-        <h2
-          style={{ marginTop: 0, marginBottom: '1.5rem', textAlign: 'center' }}
-        >
-          🔐 ERP Login
+    <div className="min-h-screen flex items-center justify-center bg-[#f0f2f8] font-sans">
+      <div className="bg-white rounded-xl shadow-sm border border-[#d0d4e8] w-[360px] p-8">
+        <div className="flex justify-center mb-6">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4f8cff] to-[#a78bfa] flex items-center justify-center text-white text-[13px] font-bold">
+            ERP
+          </div>
+        </div>
+
+        <h2 className="text-[18px] font-semibold text-[#1a1d27] text-center mb-6">
+          MeuERP
         </h2>
 
         {error && (
-          <p
-            style={{ color: '#dc3545', fontSize: '14px', marginBottom: '1rem' }}
-          >
-            {error}
-          </p>
+          <p className="text-red-500 text-[13px] mb-4 text-center">{error}</p>
         )}
 
-        <div style={{ marginBottom: '1rem' }}>
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{
-              width: '100%',
-              padding: '10px',
-              marginTop: '4px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-              boxSizing: 'border-box',
-            }}
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className="text-[12px] font-medium text-[#5a6378]">
+              {t('auth.email')}
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className="text-[12px] font-medium text-[#5a6378]">
+              {t('auth.password')}
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className={inputCls}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-2.5 rounded-lg bg-[#4f8cff] hover:bg-[#3a7aef] disabled:bg-[#8892a4] text-white text-sm font-semibold cursor-pointer transition-colors mt-1"
+          >
+            {loading ? '...' : t('auth.login')}
+          </button>
+        </form>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label>Senha</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{
-              width: '100%',
-              padding: '10px',
-              marginTop: '4px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-              boxSizing: 'border-box',
-            }}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: '100%',
-            padding: '12px',
-            background: loading ? '#6c757d' : '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            fontSize: '16px',
-          }}
-        >
-          {loading ? 'Entrando...' : 'Entrar'}
-        </button>
-
-        <p
-          style={{
-            textAlign: 'center',
-            marginTop: '1rem',
-            fontSize: '13px',
-            color: '#666',
-          }}
-        >
-          Demo: admin@erp.com / admin123
+        <p className="text-center text-[12px] text-[#8892a4] mt-5">
+          {t('auth.demo')}
         </p>
-      </form>
+      </div>
     </div>
   );
 }
-
-export default LoginPage;

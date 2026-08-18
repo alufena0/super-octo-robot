@@ -1,0 +1,111 @@
+{
+  "common": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "update": "Atualizar",
+    "loading": "Carregando...",
+    "noData": "Nenhum dado encontrado.",
+    "confirmDelete": "Excluir \"{{name}}\"?",
+    "errorSave": "Erro ao salvar: {{message}}",
+    "errorDelete": "Erro ao excluir: {{message}}",
+    "errorConnect": "Falha ao conectar com o backend."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "products": "Produtos",
+    "sales": "Vendas",
+    "financial": "Financeiro",
+    "reports": "Relatórios",
+    "settings": "Configurações",
+    "sections": {
+      "main": "Principal",
+      "management": "Gestão",
+      "system": "Sistema"
+    }
+  },
+  "theme": {
+    "light": "☀ Claro",
+    "dark": "☾ Escuro"
+  },
+  "auth": {
+    "logout": "Sair",
+    "login": "Entrar",
+    "email": "Email",
+    "password": "Senha",
+    "loginError": "Email ou senha incorretos",
+    "demo": "Demo: admin@erp.com / admin123"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Visão geral do sistema",
+    "kpi": {
+      "totalProducts": "Total de Produtos",
+      "stockValue": "Valor em Estoque",
+      "lowStock": "Estoque Baixo",
+      "avgMargin": "Margem Média",
+      "categories": "{{count}} categoria",
+      "categories_other": "{{count}} categorias",
+      "registered": "{{count}} cadastrados",
+      "costPrice": "preço de custo",
+      "currentStock": "estoque atual",
+      "belowMin": "abaixo do mínimo",
+      "allOk": "tudo ok",
+      "needsAttention": "{{count}} requer atenção",
+      "needsAttention_other": "{{count}} requerem atenção",
+      "priceFormula": "preço – custo / preço",
+      "goalReached": "▲ meta atingida",
+      "goalMissed": "▼ meta: 45%"
+    },
+    "recentProducts": "Produtos recentes",
+    "viewAll": "Ver todos →",
+    "alerts": "Alertas",
+    "activeAlerts": "{{count}} ativo",
+    "noAlerts": "Nenhum alerta no momento.",
+    "noProducts": "Nenhum produto cadastrado ainda.",
+    "alertCritical": "{{name}} — estoque crítico",
+    "alertUnits": "{{quantity}} unidades · mínimo: {{min}}"
+  },
+  "products": {
+    "title": "Produtos",
+    "subtitle": "Gestão de estoque",
+    "total": "Total de produtos: <strong>{{count}}</strong>",
+    "newProduct": "+ Novo Produto",
+    "newProductTitle": "Novo Produto",
+    "editProductTitle": "Editar Produto",
+    "noProducts": "Nenhum produto cadastrado ainda.",
+    "table": {
+      "id": "ID",
+      "name": "Nome",
+      "sku": "SKU",
+      "price": "Preço",
+      "qty": "Qtd",
+      "min": "Mín",
+      "category": "Categoria",
+      "actions": "Ações"
+    },
+    "form": {
+      "name": "Nome *",
+      "sku": "SKU *",
+      "salePrice": "Preço de Venda *",
+      "cost": "Custo *",
+      "quantity": "Quantidade *",
+      "minStock": "Estoque Mínimo *",
+      "category": "Categoria",
+      "description": "Descrição"
+    },
+    "stock": {
+      "ok": "● OK {{qty}}",
+      "low": "● Baixo {{qty}}",
+      "min": "● Mín {{qty}}",
+      "zero": "● Zerado",
+      "badge": "ESTOQUE BAIXO"
+    },
+    "pagination": {
+      "previous": "← Anterior",
+      "next": "Próxima →",
+      "info": "Página {{page}} de {{total}}"
+    }
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "update": "Update",
+    "loading": "Loading...",
+    "noData": "No data found.",
+    "confirmDelete": "Delete \"{{name}}\"?",
+    "errorSave": "Error saving: {{message}}",
+    "errorDelete": "Error deleting: {{message}}",
+    "errorConnect": "Failed to connect to the backend."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "sales": "Sales",
+    "financial": "Financial",
+    "reports": "Reports",
+    "settings": "Settings",
+    "sections": {
+      "main": "Main",
+      "management": "Management",
+      "system": "System"
+    }
+  },
+  "theme": {
+    "light": "☀ Light",
+    "dark": "☾ Dark"
+  },
+  "auth": {
+    "logout": "Sign out",
+    "login": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "loginError": "Invalid email or password",
+    "demo": "Demo: admin@erp.com / admin123"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "System overview",
+    "kpi": {
+      "totalProducts": "Total Products",
+      "stockValue": "Stock Value",
+      "lowStock": "Low Stock",
+      "avgMargin": "Avg. Margin",
+      "categories": "{{count}} category",
+      "categories_other": "{{count}} categories",
+      "registered": "{{count}} registered",
+      "costPrice": "cost price",
+      "currentStock": "current stock",
+      "belowMin": "below minimum",
+      "allOk": "all good",
+      "needsAttention": "{{count}} needs attention",
+      "needsAttention_other": "{{count}} need attention",
+      "priceFormula": "price – cost / price",
+      "goalReached": "▲ goal reached",
+      "goalMissed": "▼ goal: 45%"
+    },
+    "recentProducts": "Recent Products",
+    "viewAll": "View all →",
+    "alerts": "Alerts",
+    "activeAlerts": "{{count}} active",
+    "noAlerts": "No alerts at the moment.",
+    "noProducts": "No products registered yet.",
+    "alertCritical": "{{name}} — critical stock",
+    "alertUnits": "{{quantity}} units · minimum: {{min}}"
+  },
+  "products": {
+    "title": "Products",
+    "subtitle": "Inventory management",
+    "total": "Total products: <strong>{{count}}</strong>",
+    "newProduct": "+ New Product",
+    "newProductTitle": "New Product",
+    "editProductTitle": "Edit Product",
+    "noProducts": "No products registered yet.",
+    "table": {
+      "id": "ID",
+      "name": "Name",
+      "sku": "SKU",
+      "price": "Price",
+      "qty": "Qty",
+      "min": "Min",
+      "category": "Category",
+      "actions": "Actions"
+    },
+    "form": {
+      "name": "Name *",
+      "sku": "SKU *",
+      "salePrice": "Sale Price *",
+      "cost": "Cost *",
+      "quantity": "Quantity *",
+      "minStock": "Min. Stock *",
+      "category": "Category",
+      "description": "Description"
+    },
+    "stock": {
+      "ok": "● OK {{qty}}",
+      "low": "● Low {{qty}}",
+      "min": "● Min {{qty}}",
+      "zero": "● Out of stock",
+      "badge": "LOW STOCK"
+    },
+    "pagination": {
+      "previous": "← Previous",
+      "next": "Next →",
+      "info": "Page {{page}} of {{total}}"
+    }
+  }
+}
