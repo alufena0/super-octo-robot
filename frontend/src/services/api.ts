@@ -8,33 +8,32 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-export interface Product {
+export interface Relato {
   id: number;
-  name: string;
-  sku: string;
-  description?: string;
-  price: number;
-  cost: number;
-  quantity: number;
-  minStock: number;
-  category?: string;
+  comunidade: string;
+  tipoViolacao: string;
+  descricao: string;
+  local: string;
+  dataOcorrido: string;
+  status: string;
   createdAt: string;
   updatedAt: string;
+  userId?: number | null;
 }
 
-export interface PaginatedProducts {
-  data: Product[];
+export interface PaginatedRelatos {
+  data: Relato[];
   total: number;
   page: number;
   totalPages: number;
 }
 
-export interface ProductStats {
+export interface RelatoStats {
   total: number;
-  stockValue: number;
-  lowStock: number;
-  avgMargin: number;
-  categories: number;
+  abertos: number;
+  encaminhados: number;
+  resolvidos: number;
+  tiposUnicos: number;
 }
 
 export interface User {
@@ -51,19 +50,25 @@ export const authApi = {
       password,
     }),
   register: (email: string, password: string, name: string) =>
-    api.post('/auth/register', { email, password, name }),
+    api.post<{ access_token: string; user: User }>('/auth/register', {
+      email,
+      password,
+      name,
+    }),
 };
 
-export const productApi = {
+export const relatoApi = {
   getAll: (page = 1, limit = 10) =>
-    api.get<PaginatedProducts>('/products', { params: { page, limit } }),
-  getStats: () => api.get<ProductStats>('/products/stats'),
-  getLowStock: () => api.get<Product[]>('/products/low-stock'),
-  create: (data: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) =>
-    api.post<Product>('/products', data),
+    api.get<PaginatedRelatos>('/relatos', { params: { page, limit } }),
+  getMeus: (page = 1, limit = 10) =>
+    api.get<PaginatedRelatos>('/relatos/meus', { params: { page, limit } }),
+  getStats: () => api.get<RelatoStats>('/relatos/stats'),
+  getPendentes: () => api.get<Relato[]>('/relatos/pendentes'),
+  create: (data: Omit<Relato, 'id' | 'createdAt' | 'updatedAt'>) =>
+    api.post<Relato>('/relatos', data),
   update: (
     id: number,
-    data: Partial<Omit<Product, 'id' | 'createdAt' | 'updatedAt'>>,
-  ) => api.patch<Product>(`/products/${id}`, data),
-  delete: (id: number) => api.delete(`/products/${id}`),
+    data: Partial<Omit<Relato, 'id' | 'createdAt' | 'updatedAt'>>,
+  ) => api.patch<Relato>(`/relatos/${id}`, data),
+  delete: (id: number) => api.delete(`/relatos/${id}`),
 };

@@ -12,11 +12,21 @@
     "errorDelete": "Erro ao excluir: {{message}}",
     "errorConnect": "Falha ao conectar com o backend."
   },
+  "a11y": {
+    "title": "Acessibilidade",
+    "fontSize": "Tamanho do texto",
+    "increase": "Aumentar tamanho do texto",
+    "decrease": "Diminuir tamanho do texto",
+    "resetFont": "Restaurar padrão",
+    "narration": "Narração",
+    "readPage": "Ler esta página",
+    "stopReading": "Parar leitura"
+  },
   "nav": {
     "dashboard": "Dashboard",
-    "products": "Produtos",
-    "sales": "Vendas",
-    "financial": "Financeiro",
+    "relatos": "Relatos",
+    "encaminhamentos": "Encaminhamentos",
+    "comunidades": "Comunidades",
     "reports": "Relatórios",
     "settings": "Configurações",
     "sections": {
@@ -35,77 +45,101 @@
     "email": "Email",
     "password": "Senha",
     "loginError": "Email ou senha incorretos",
-    "demo": "Demo: admin@erp.com / admin123"
+    "demo": "Demo: admin@erp.com / admin123",
+    "registerError": "Não foi possível criar a conta",
+    "createAccount": "Criar conta",
+    "createAccountSubtitle": "Cadastre-se para registrar relatos",
+    "alreadyHaveAccount": "Já tem uma conta?",
+    "noAccount": "Não tem uma conta?",
+    "name": "Nome"
   },
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "Visão geral do sistema",
     "kpi": {
-      "totalProducts": "Total de Produtos",
-      "stockValue": "Valor em Estoque",
-      "lowStock": "Estoque Baixo",
-      "avgMargin": "Margem Média",
-      "categories": "{{count}} categoria",
-      "categories_other": "{{count}} categorias",
+      "total": "Total de Relatos",
+      "abertos": "Relatos Abertos",
+      "encaminhados": "Encaminhados",
+      "resolvidos": "Resolvidos",
+      "tiposUnicos": "{{count}} tipo de violação",
+      "tiposUnicos_other": "{{count}} tipos de violação",
       "registered": "{{count}} cadastrados",
-      "costPrice": "preço de custo",
-      "currentStock": "estoque atual",
-      "belowMin": "abaixo do mínimo",
-      "allOk": "tudo ok",
       "needsAttention": "{{count}} requer atenção",
       "needsAttention_other": "{{count}} requerem atenção",
-      "priceFormula": "preço – custo / preço",
-      "goalReached": "▲ meta atingida",
-      "goalMissed": "▼ meta: 45%"
+      "allOk": "tudo em dia",
+      "aguardandoTriagem": "aguardando triagem",
+      "emEncaminhamento": "em encaminhamento",
+      "casosFechados": "casos fechados"
     },
-    "recentProducts": "Produtos recentes",
-    "viewAll": "Ver todos →",
-    "alerts": "Alertas",
-    "activeAlerts": "{{count}} ativo",
-    "noAlerts": "Nenhum alerta no momento.",
-    "noProducts": "Nenhum produto cadastrado ainda.",
-    "alertCritical": "{{name}} — estoque crítico",
-    "alertUnits": "{{quantity}} unidades · mínimo: {{min}}"
+    "recentRelatos": "Relatos recentes",
+    "viewAll": "Ver todos",
+    "alerts": "Pendentes",
+    "activeAlerts": "{{count}} pendente",
+    "activeAlerts_other": "{{count}} pendentes",
+    "noAlerts": "Nenhum relato pendente no momento.",
+    "noRelatos": "Nenhum relato cadastrado ainda.",
+    "alertPendente": "{{comunidade}} — {{tipo}}",
+    "alertData": "Ocorrido em {{data}}"
   },
-  "products": {
-    "title": "Produtos",
-    "subtitle": "Gestão de estoque",
-    "total": "Total de produtos: <strong>{{count}}</strong>",
-    "newProduct": "+ Novo Produto",
-    "newProductTitle": "Novo Produto",
-    "editProductTitle": "Editar Produto",
-    "noProducts": "Nenhum produto cadastrado ainda.",
+  "relatos": {
+    "title": "Relatos",
+    "subtitle": "Registro de episódios de intolerância religiosa",
+    "total": "Total de relatos: {{count}}",
+    "totalLabel": "Total de relatos:",
+    "newRelato": "+ Novo Relato",
+    "newRelatoTitle": "Novo Relato",
+    "editRelatoTitle": "Editar Relato",
+    "noRelatos": "Nenhum relato cadastrado ainda.",
+    "wizard": {
+      "intro": "Preencha as informações em etapas. Você pode revisar tudo antes de enviar.",
+      "step1": "Identificação",
+      "step2": "O fato",
+      "step3": "Descrição",
+      "step4": "Revisão",
+      "comunidadePlaceholder": "Nome do terreiro ou comunidade",
+      "localPlaceholder": "Ex: Posto de Saúde, UPA, Hospital...",
+      "tipoPlaceholder": "Ex: Recusa de atendimento, ofensa verbal...",
+      "descricaoPlaceholder": "Descreva o que aconteceu com o máximo de detalhes possível.",
+      "reviewIntro": "Confira as informações antes de registrar. Você pode voltar para corrigir qualquer campo.",
+      "back": "Voltar",
+      "next": "Próximo",
+      "submit": "Registrar relato"
+    },
     "table": {
       "id": "ID",
-      "name": "Nome",
-      "sku": "SKU",
-      "price": "Preço",
-      "qty": "Qtd",
-      "min": "Mín",
-      "category": "Categoria",
+      "comunidade": "Comunidade",
+      "tipoViolacao": "Tipo",
+      "local": "Local",
+      "data": "Data",
+      "status": "Status",
       "actions": "Ações"
     },
     "form": {
-      "name": "Nome *",
-      "sku": "SKU *",
-      "salePrice": "Preço de Venda *",
-      "cost": "Custo *",
-      "quantity": "Quantidade *",
-      "minStock": "Estoque Mínimo *",
-      "category": "Categoria",
-      "description": "Descrição"
+      "comunidade": "Comunidade/Terreiro *",
+      "tipoViolacao": "Tipo de Violação *",
+      "local": "Local do Ocorrido *",
+      "dataOcorrido": "Data do Ocorrido *",
+      "status": "Status",
+      "descricao": "Descrição *"
     },
-    "stock": {
-      "ok": "● OK {{qty}}",
-      "low": "● Baixo {{qty}}",
-      "min": "● Mín {{qty}}",
-      "zero": "● Zerado",
-      "badge": "ESTOQUE BAIXO"
+    "status": {
+      "novo": "Novo",
+      "em_analise": "Em Análise",
+      "encaminhado": "Encaminhado",
+      "resolvido": "Resolvido"
     },
     "pagination": {
-      "previous": "← Anterior",
-      "next": "Próxima →",
+      "previous": "Anterior",
+      "next": "Próxima",
       "info": "Página {{page}} de {{total}}"
     }
+  },
+  "inicio": {
+    "greeting": "Olá, {{name}}",
+    "subtitle": "Bem-vindo ao TerreiroAcolhe",
+    "newReportTitle": "Registrar um novo relato",
+    "newReportDescription": "Conte o que aconteceu. Suas informações ajudam a rede de apoio a agir.",
+    "myReports": "Meus relatos",
+    "noReportsYet": "Você ainda não registrou nenhum relato."
   }
 }

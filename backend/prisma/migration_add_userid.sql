@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Relato" ADD COLUMN "userId" INTEGER REFERENCES "User"("id") ON DELETE SET NULL;

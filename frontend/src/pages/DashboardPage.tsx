@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { productApi, Product, ProductStats } from '../services/api';
+import { relatoApi, Relato, RelatoStats } from '../services/api';
 import AppLayout, { useTheme } from '../components/AppLayout';
 import { useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 
 interface KpiCardProps {
   label: string;
@@ -16,20 +17,18 @@ function KpiCard({ label, value, sub, tag, tagColor }: KpiCardProps) {
   const { theme } = useTheme();
   const surface =
     theme === 'dark'
-      ? 'bg-[#1a1d27] border-[#2a2f45]'
-      : 'bg-white border-[#d0d4e8]';
-  const text = theme === 'dark' ? 'text-[#e2e8f0]' : 'text-[#1a1d27]';
-  const muted = theme === 'dark' ? 'text-[#8892a4]' : 'text-[#5a6378]';
+      ? 'bg-[#16212c] border-[#2a3b4d]'
+      : 'bg-white border-[#d5dee6]';
+  const text = theme === 'dark' ? 'text-[#e8edf2]' : 'text-[#1a2733]';
+  const muted = theme === 'dark' ? 'text-[#8fa3b8]' : 'text-[#5c7080]';
   const accent = {
-    blue: { bar: 'bg-[#4f8cff]', tag: 'bg-[#4f8cff22] text-[#4f8cff]' },
-    green: { bar: 'bg-[#34d399]', tag: 'bg-[#34d39922] text-[#34d399]' },
-    yellow: { bar: 'bg-[#fbbf24]', tag: 'bg-[#fbbf2422] text-[#fbbf24]' },
-    red: { bar: 'bg-[#f87171]', tag: 'bg-[#f8717122] text-[#f87171]' },
+    blue: { bar: 'bg-[#3b82c4]', tag: 'bg-[#3b82c422] text-[#3b82c4]' },
+    green: { bar: 'bg-[#15803d]', tag: 'bg-[#15803d22] text-[#15803d]' },
+    yellow: { bar: 'bg-[#b45309]', tag: 'bg-[#b4530922] text-[#b45309]' },
+    red: { bar: 'bg-[#b91c1c]', tag: 'bg-[#b91c1c22] text-[#b91c1c]' },
   }[tagColor];
   return (
-    <div
-      className={`relative border rounded-xl p-5 overflow-hidden ${surface}`}
-    >
+    <div className={`relative border rounded p-5 overflow-hidden ${surface}`}>
       <div className={`absolute top-0 left-0 right-0 h-0.5 ${accent.bar}`} />
       <div
         className={`text-[11px] font-semibold uppercase tracking-widest mb-3 ${muted}`}
@@ -41,7 +40,7 @@ function KpiCard({ label, value, sub, tag, tagColor }: KpiCardProps) {
       </div>
       <div className={`text-xs mt-1.5 ${muted}`}>{sub}</div>
       <span
-        className={`inline-block mt-3 text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${accent.tag}`}
+        className={`inline-block mt-3 text-[11px] font-semibold px-2.5 py-0.5 rounded ${accent.tag}`}
       >
         {tag}
       </span>
@@ -49,35 +48,20 @@ function KpiCard({ label, value, sub, tag, tagColor }: KpiCardProps) {
   );
 }
 
-function StockBadge({
-  quantity,
-  minStock,
-}: {
-  quantity: number;
-  minStock: number;
-}) {
+const STATUS_MAP: Record<string, string> = {
+  novo: 'bg-[#3b82c422] text-[#3b82c4]',
+  em_analise: 'bg-[#b4530922] text-[#b45309]',
+  encaminhado: 'bg-[#2a3b4d] text-[#e8edf2]',
+  resolvido: 'bg-[#15803d22] text-[#15803d]',
+};
+
+function StatusBadge({ status }: { status: string }) {
   const { t } = useTranslation();
-  if (quantity <= 0)
-    return (
-      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#f8717122] text-[#f87171]">
-        {t('products.stock.zero')}
-      </span>
-    );
-  if (quantity < minStock)
-    return (
-      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#f8717122] text-[#f87171]">
-        {t('products.stock.low', { qty: quantity })}
-      </span>
-    );
-  if (quantity === minStock)
-    return (
-      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#fbbf2422] text-[#fbbf24]">
-        {t('products.stock.min', { qty: quantity })}
-      </span>
-    );
   return (
-    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#34d39922] text-[#34d399]">
-      {t('products.stock.ok', { qty: quantity })}
+    <span
+      className={`text-[11px] font-semibold px-2 py-0.5 rounded ${STATUS_MAP[status] ?? ''}`}
+    >
+      {t(`relatos.status.${status}`)}
     </span>
   );
 }
@@ -87,22 +71,22 @@ function DashboardContent() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const [stats, setStats] = useState<ProductStats | null>(null);
-  const [recent, setRecent] = useState<Product[]>([]);
-  const [lowStockItems, setLowStockItems] = useState<Product[]>([]);
+  const [stats, setStats] = useState<RelatoStats | null>(null);
+  const [recent, setRecent] = useState<Relato[]>([]);
+  const [pendentes, setPendentes] = useState<Relato[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
-      productApi.getStats(),
-      productApi.getAll(1, 5),
-      productApi.getLowStock(),
+      relatoApi.getStats(),
+      relatoApi.getAll(1, 5),
+      relatoApi.getPendentes(),
     ])
-      .then(([statsRes, productsRes, lowStockRes]) => {
+      .then(([statsRes, relatosRes, pendentesRes]) => {
         setStats(statsRes.data);
-        setRecent(productsRes.data.data);
-        setLowStockItems(lowStockRes.data);
+        setRecent(relatosRes.data.data);
+        setPendentes(pendentesRes.data);
         setLoading(false);
       })
       .catch(() => {
@@ -113,78 +97,70 @@ function DashboardContent() {
 
   const surface =
     theme === 'dark'
-      ? 'bg-[#1a1d27] border-[#2a2f45]'
-      : 'bg-white border-[#d0d4e8]';
-  const surface2 = theme === 'dark' ? 'bg-[#22263a]' : 'bg-[#f0f2f8]';
-  const border = theme === 'dark' ? 'border-[#2a2f45]' : 'border-[#d0d4e8]';
-  const text = theme === 'dark' ? 'text-[#e2e8f0]' : 'text-[#1a1d27]';
-  const muted = theme === 'dark' ? 'text-[#8892a4]' : 'text-[#5a6378]';
+      ? 'bg-[#16212c] border-[#2a3b4d]'
+      : 'bg-white border-[#d5dee6]';
+  const surface2 = theme === 'dark' ? 'bg-[#1e2c3a]' : 'bg-[#e7edf3]';
+  const border = theme === 'dark' ? 'border-[#2a3b4d]' : 'border-[#d5dee6]';
+  const text = theme === 'dark' ? 'text-[#e8edf2]' : 'text-[#1a2733]';
+  const muted = theme === 'dark' ? 'text-[#8fa3b8]' : 'text-[#5c7080]';
+  const rowHover =
+    theme === 'dark' ? 'hover:bg-[#1e2c3a]' : 'hover:bg-[#e7edf3]';
 
   if (loading) return <p className={muted}>{t('common.loading')}</p>;
   if (error) return <p className="text-red-500">{error}</p>;
   if (!stats) return null;
 
-  const stockValueFmt =
-    stats.stockValue >= 1000
-      ? `R$${(stats.stockValue / 1000).toFixed(1)}k`
-      : `R$${stats.stockValue.toFixed(0)}`;
-
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-4 gap-4">
         <KpiCard
-          label={t('dashboard.kpi.totalProducts')}
+          label={t('dashboard.kpi.total')}
           value={String(stats.total)}
-          sub={t('dashboard.kpi.categories', { count: stats.categories })}
+          sub={t('dashboard.kpi.tiposUnicos', { count: stats.tiposUnicos })}
           tag={t('dashboard.kpi.registered', { count: stats.total })}
           tagColor="blue"
         />
         <KpiCard
-          label={t('dashboard.kpi.stockValue')}
-          value={stockValueFmt}
-          sub={t('dashboard.kpi.costPrice')}
-          tag={t('dashboard.kpi.currentStock')}
-          tagColor="green"
-        />
-        <KpiCard
-          label={t('dashboard.kpi.lowStock')}
-          value={String(stats.lowStock)}
-          sub={t('dashboard.kpi.belowMin')}
+          label={t('dashboard.kpi.abertos')}
+          value={String(stats.abertos)}
+          sub={t('dashboard.kpi.aguardandoTriagem')}
           tag={
-            stats.lowStock === 0
+            stats.abertos === 0
               ? t('dashboard.kpi.allOk')
-              : t('dashboard.kpi.needsAttention', { count: stats.lowStock })
+              : t('dashboard.kpi.needsAttention', { count: stats.abertos })
           }
-          tagColor={stats.lowStock === 0 ? 'green' : 'yellow'}
+          tagColor={stats.abertos === 0 ? 'green' : 'yellow'}
         />
         <KpiCard
-          label={t('dashboard.kpi.avgMargin')}
-          value={`${stats.avgMargin.toFixed(0)}%`}
-          sub={t('dashboard.kpi.priceFormula')}
-          tag={
-            stats.avgMargin >= 45
-              ? t('dashboard.kpi.goalReached')
-              : t('dashboard.kpi.goalMissed')
-          }
-          tagColor={stats.avgMargin >= 45 ? 'green' : 'red'}
+          label={t('dashboard.kpi.encaminhados')}
+          value={String(stats.encaminhados)}
+          sub={t('dashboard.kpi.emEncaminhamento')}
+          tag={t('dashboard.kpi.emEncaminhamento')}
+          tagColor="blue"
+        />
+        <KpiCard
+          label={t('dashboard.kpi.resolvidos')}
+          value={String(stats.resolvidos)}
+          sub={t('dashboard.kpi.casosFechados')}
+          tag={t('dashboard.kpi.casosFechados')}
+          tagColor="green"
         />
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        <div
-          className={`col-span-2 border rounded-xl overflow-hidden ${surface}`}
-        >
+        <div className={`col-span-2 border rounded overflow-hidden ${surface}`}>
           <div
             className={`flex items-center justify-between px-5 py-4 border-b ${border}`}
           >
             <span className={`text-[14px] font-semibold ${text}`}>
-              {t('dashboard.recentProducts')}
+              {t('dashboard.recentRelatos')}
             </span>
             <button
-              onClick={() => navigate('/products')}
-              className="text-[12px] text-[#4f8cff] hover:underline cursor-pointer"
+              onClick={() => navigate('/relatos')}
+              className="flex items-center gap-1 text-[12px] text-[#3b82c4] hover:underline cursor-pointer"
             >
               {t('dashboard.viewAll')}
+              <ArrowRight size={12} strokeWidth={2} />
             </button>
           </div>
           <table className="w-full border-collapse text-sm">
@@ -192,36 +168,38 @@ function DashboardContent() {
               <tr className={surface2}>
                 {(
                   [
-                    'dashboard.recentProducts',
-                    'products.table.sku',
-                    'products.table.price',
-                    'products.table.qty',
+                    'relatos.table.comunidade',
+                    'relatos.table.tipoViolacao',
+                    'relatos.table.data',
+                    'relatos.table.status',
                   ] as const
-                ).map((k, i) => (
+                ).map((k) => (
                   <th
-                    key={i}
+                    key={k}
                     className={`px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide ${muted} border-b ${border}`}
                   >
-                    {i === 0 ? t('products.table.name') : t(k)}
+                    {t(k)}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {recent.map((p) => (
+              {recent.map((r) => (
                 <tr
-                  key={p.id}
-                  className={`border-b ${border} last:border-b-0 transition-colors ${theme === 'dark' ? 'hover:bg-[#22263a]' : 'hover:bg-[#f0f2f8]'}`}
+                  key={r.id}
+                  className={`border-b ${border} last:border-b-0 transition-colors ${rowHover}`}
                 >
-                  <td className={`px-5 py-3 font-medium ${text}`}>{p.name}</td>
-                  <td className={`px-5 py-3 font-mono text-xs ${muted}`}>
-                    {p.sku}
+                  <td className={`px-5 py-3 font-medium ${text}`}>
+                    {r.comunidade}
+                  </td>
+                  <td className={`px-5 py-3 text-xs ${muted}`}>
+                    {r.tipoViolacao}
                   </td>
                   <td className={`px-5 py-3 ${text}`}>
-                    R$ {p.price.toFixed(2)}
+                    {new Date(r.dataOcorrido).toLocaleDateString('pt-BR')}
                   </td>
                   <td className="px-5 py-3">
-                    <StockBadge quantity={p.quantity} minStock={p.minStock} />
+                    <StatusBadge status={r.status} />
                   </td>
                 </tr>
               ))}
@@ -231,7 +209,7 @@ function DashboardContent() {
                     colSpan={4}
                     className={`px-5 py-8 text-center text-sm ${muted}`}
                   >
-                    {t('dashboard.noProducts')}
+                    {t('dashboard.noRelatos')}
                   </td>
                 </tr>
               )}
@@ -239,7 +217,7 @@ function DashboardContent() {
           </table>
         </div>
 
-        <div className={`border rounded-xl overflow-hidden ${surface}`}>
+        <div className={`border rounded overflow-hidden ${surface}`}>
           <div
             className={`flex items-center justify-between px-5 py-4 border-b ${border}`}
           >
@@ -247,31 +225,35 @@ function DashboardContent() {
               {t('dashboard.alerts')}
             </span>
             <span className={`text-[12px] ${muted}`}>
-              {t('dashboard.activeAlerts', { count: stats.lowStock })}
+              {t('dashboard.activeAlerts', { count: pendentes.length })}
             </span>
           </div>
           <div>
-            {stats.lowStock === 0 ? (
+            {pendentes.length === 0 ? (
               <p className={`px-5 py-8 text-center text-sm ${muted}`}>
                 {t('dashboard.noAlerts')}
               </p>
             ) : (
-              lowStockItems.map((p) => (
+              pendentes.slice(0, 6).map((r) => (
                 <div
-                  key={p.id}
-                  className={`flex items-start gap-3 px-5 py-3 border-b ${border} last:border-b-0 transition-colors ${theme === 'dark' ? 'hover:bg-[#22263a]' : 'hover:bg-[#f0f2f8]'}`}
+                  key={r.id}
+                  className={`flex items-start gap-3 px-5 py-3 border-b ${border} last:border-b-0 transition-colors ${rowHover}`}
                 >
                   <div
-                    className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${p.quantity <= 0 ? 'bg-[#f87171]' : 'bg-[#fbbf24]'}`}
+                    className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${r.status === 'novo' ? 'bg-[#b91c1c]' : 'bg-[#b45309]'}`}
                   />
                   <div>
                     <div className={`text-[13px] font-medium ${text}`}>
-                      {t('dashboard.alertCritical', { name: p.name })}
+                      {t('dashboard.alertPendente', {
+                        comunidade: r.comunidade,
+                        tipo: r.tipoViolacao,
+                      })}
                     </div>
                     <div className={`text-[11px] mt-0.5 ${muted}`}>
-                      {t('dashboard.alertUnits', {
-                        quantity: p.quantity,
-                        min: p.minStock,
+                      {t('dashboard.alertData', {
+                        data: new Date(r.dataOcorrido).toLocaleDateString(
+                          'pt-BR',
+                        ),
                       })}
                     </div>
                   </div>

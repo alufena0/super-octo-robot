@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MeuErpSistemaController } from './meu-erp-sistema.controller';
 import { MeuErpSistemaService } from './meu-erp-sistema.service';
-import { InventoryModule } from './modules/inventory/inventory.module';
+import { RelatosModule } from './modules/relatos/relatos.module';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 
@@ -11,7 +11,7 @@ import { PrismaModule } from './prisma/prisma.module';
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     PrismaModule,
     AuthModule,
-    InventoryModule,
+    RelatosModule,
   ],
   controllers: [MeuErpSistemaController],
   providers: [MeuErpSistemaService],

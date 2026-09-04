@@ -39,9 +39,10 @@ export class AuthService {
     if (exists) throw new UnauthorizedException('Email já cadastrado');
 
     const hash = await bcrypt.hash(password, 10);
+    // Cadastro público sempre cria usuário comum — nunca admin.
     const user = await this.prisma.user.create({
-      data: { email, password: hash, name },
+      data: { email, password: hash, name, role: 'user' },
     });
-    return { id: user.id, email: user.email, name: user.name };
+    return { id: user.id, email: user.email, name: user.name, role: user.role };
   }
 }

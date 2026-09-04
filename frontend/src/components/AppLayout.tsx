@@ -2,18 +2,31 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n/index';
+import AccessibilityWidget from './AccessibilityWidget';
+import { HeaderDotsPattern } from './HeaderDotsPattern';
+import {
+  LayoutDashboard,
+  ClipboardList,
+  ArrowLeftRight,
+  Home,
+  BarChart3,
+  Settings,
+  LogOut,
+  Sun,
+  Moon,
+  type LucideIcon,
+} from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Theme context
 // ---------------------------------------------------------------------------
-
 type Theme = 'dark' | 'light';
-
-const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>({
-  theme: 'dark',
-  toggle: () => {},
-});
-
+export const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>(
+  {
+    theme: 'dark',
+    toggle: () => {},
+  },
+);
 export function useTheme() {
   return useContext(ThemeContext);
 }
@@ -21,38 +34,45 @@ export function useTheme() {
 // ---------------------------------------------------------------------------
 // Nav config
 // ---------------------------------------------------------------------------
-
 interface NavItem {
   labelKey: string;
-  icon: string;
+  icon: LucideIcon;
   path: string;
   disabled?: boolean;
 }
-
 interface NavGroup {
   sectionKey: string;
   items: NavItem[];
 }
-
 const navGroups: NavGroup[] = [
   {
     sectionKey: 'nav.sections.main',
     items: [
-      { labelKey: 'nav.dashboard', icon: '⬡', path: '/' },
-      { labelKey: 'nav.products', icon: '📦', path: '/products' },
+      { labelKey: 'nav.dashboard', icon: LayoutDashboard, path: '/' },
+      { labelKey: 'nav.relatos', icon: ClipboardList, path: '/relatos' },
     ],
   },
   {
     sectionKey: 'nav.sections.management',
     items: [
-      { labelKey: 'nav.sales', icon: '🛒', path: '/sales', disabled: true },
       {
-        labelKey: 'nav.financial',
-        icon: '💰',
-        path: '/financial',
+        labelKey: 'nav.encaminhamentos',
+        icon: ArrowLeftRight,
+        path: '/encaminhamentos',
         disabled: true,
       },
-      { labelKey: 'nav.reports', icon: '📊', path: '/reports', disabled: true },
+      {
+        labelKey: 'nav.comunidades',
+        icon: Home,
+        path: '/comunidades',
+        disabled: true,
+      },
+      {
+        labelKey: 'nav.reports',
+        icon: BarChart3,
+        path: '/reports',
+        disabled: true,
+      },
     ],
   },
   {
@@ -60,7 +80,7 @@ const navGroups: NavGroup[] = [
     items: [
       {
         labelKey: 'nav.settings',
-        icon: '⚙️',
+        icon: Settings,
         path: '/settings',
         disabled: true,
       },
@@ -71,7 +91,6 @@ const navGroups: NavGroup[] = [
 // ---------------------------------------------------------------------------
 // Lang selector
 // ---------------------------------------------------------------------------
-
 const langs = [
   { code: 'pt-BR', label: 'PT' },
   { code: 'en-US', label: 'EN' },
@@ -80,27 +99,23 @@ const langs = [
 // ---------------------------------------------------------------------------
 // AppLayout
 // ---------------------------------------------------------------------------
-
 interface AppLayoutProps {
   children: React.ReactNode;
   title: string;
   subtitle?: string;
 }
-
 export default function AppLayout({
   children,
   title,
   subtitle,
 }: AppLayoutProps) {
   const { t } = useTranslation();
-
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem('erp-theme') as Theme) ?? 'dark',
   );
   const [lang, setLang] = useState(
     () => localStorage.getItem('erp-lang') ?? 'pt-BR',
   );
-
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -110,7 +125,6 @@ export default function AppLayout({
   }, [theme]);
 
   const toggle = () => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
-
   const switchLang = (code: string) => {
     setLang(code);
     localStorage.setItem('erp-lang', code);
@@ -124,7 +138,6 @@ export default function AppLayout({
       return {};
     }
   })();
-
   const initials =
     (user.name as string | undefined)
       ?.split(' ')
@@ -139,40 +152,49 @@ export default function AppLayout({
     navigate('/login');
   };
 
+  // ============================================================
+  // Cores/opacidades do padrão de pontos do header.
+  // Fundo do header: #16212c (muito escuro)
+  // Cor dos pontos no dark: #8ec4f8 (azul bem claro)
+  // ============================================================
+  const isDark = theme === 'dark';
+  const dotColor = isDark ? '#8ec4f8' : '#2563a8';
+  const dotOpacity1 = isDark ? 0.7 : 0.1;
+  const dotOpacity2 = isDark ? 0.5 : 0.06;
+  const dotOpacity3 = isDark ? 0.3 : 0.04;
+
   return (
     <ThemeContext.Provider value={{ theme, toggle }}>
       <div
         className={`flex min-h-screen font-sans text-sm ${
-          theme === 'dark'
-            ? 'bg-[#0f1117] text-[#e2e8f0]'
-            : 'bg-[#f0f2f8] text-[#1a1d27]'
+          isDark ? 'bg-[#0f1720] text-[#e8edf2]' : 'bg-[#f4f6f8] text-[#1a2733]'
         }`}
       >
         {/* SIDEBAR */}
         <aside
           className={`w-[220px] min-w-[220px] flex flex-col ${
-            theme === 'dark'
-              ? 'bg-[#1a1d27] border-r border-[#2a2f45]'
-              : 'bg-white border-r border-[#d0d4e8]'
+            isDark
+              ? 'bg-[#16212c] border-r border-[#2a3b4d]'
+              : 'bg-white border-r border-[#d5dee6]'
           }`}
         >
           {/* Logo */}
           <div
             className={`flex items-center gap-3 px-4 py-5 border-b ${
-              theme === 'dark' ? 'border-[#2a2f45]' : 'border-[#d0d4e8]'
+              isDark ? 'border-[#2a3b4d]' : 'border-[#d5dee6]'
             }`}
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4f8cff] to-[#a78bfa] flex items-center justify-center text-white text-[11px] font-bold shrink-0">
-              ERP
+            <div className="w-8 h-8 rounded bg-[#2563a8] flex items-center justify-center text-white text-[11px] font-bold shrink-0">
+              TA
             </div>
             <div>
               <div
-                className={`text-[15px] font-semibold ${theme === 'dark' ? 'text-[#e2e8f0]' : 'text-[#1a1d27]'}`}
+                className={`text-[15px] font-semibold ${isDark ? 'text-[#e8edf2]' : 'text-[#1a2733]'}`}
               >
-                MeuERP
+                TerreiroAcolhe
               </div>
-              <div className="text-[10px] uppercase tracking-widest text-[#8892a4]">
-                Sistema
+              <div className="text-[10px] uppercase tracking-widest text-[#8fa3b8]">
+                Rede de Apoio
               </div>
             </div>
           </div>
@@ -181,31 +203,30 @@ export default function AppLayout({
           <nav className="flex-1 overflow-y-auto px-2 py-3 flex flex-col gap-1">
             {navGroups.map((group) => (
               <div key={group.sectionKey}>
-                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#8892a4] px-2 pt-3 pb-1">
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#8fa3b8] px-2 pt-3 pb-1">
                   {t(group.sectionKey)}
                 </div>
                 {group.items.map((item) => {
                   const active = location.pathname === item.path;
+                  const Icon = item.icon;
                   return (
                     <button
                       key={item.path}
                       onClick={() => !item.disabled && navigate(item.path)}
                       disabled={item.disabled}
                       className={[
-                        'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] text-left transition-colors',
+                        'w-full flex items-center gap-2 px-3 py-2 rounded text-[13px] text-left transition-colors',
                         item.disabled
                           ? 'opacity-40 cursor-not-allowed'
                           : 'cursor-pointer',
                         active
-                          ? 'bg-[#4f8cff22] text-[#4f8cff] font-medium'
-                          : theme === 'dark'
-                            ? 'text-[#8892a4] hover:bg-[#22263a] hover:text-[#e2e8f0]'
-                            : 'text-[#5a6378] hover:bg-[#e8eaf2] hover:text-[#1a1d27]',
+                          ? 'bg-[#3b82c422] text-[#3b82c4] font-medium'
+                          : isDark
+                            ? 'text-[#8fa3b8] hover:bg-[#1e2c3a] hover:text-[#e8edf2]'
+                            : 'text-[#5c7080] hover:bg-[#e7edf3] hover:text-[#1a2733]',
                       ].join(' ')}
                     >
-                      <span className="w-5 text-center text-[15px]">
-                        {item.icon}
-                      </span>
+                      <Icon size={16} strokeWidth={1.75} className="shrink-0" />
                       {t(item.labelKey)}
                     </button>
                   );
@@ -217,33 +238,34 @@ export default function AppLayout({
           {/* Footer */}
           <div
             className={`border-t p-3 flex flex-col gap-2 ${
-              theme === 'dark' ? 'border-[#2a2f45]' : 'border-[#d0d4e8]'
+              isDark ? 'border-[#2a3b4d]' : 'border-[#d5dee6]'
             }`}
           >
             <div className="flex items-center gap-2 px-1">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4f8cff] to-[#a78bfa] flex items-center justify-center text-white text-[12px] font-bold shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[#3b5166] flex items-center justify-center text-white text-[12px] font-bold shrink-0">
                 {initials}
               </div>
               <div className="min-w-0">
                 <div
-                  className={`text-[13px] font-medium truncate ${theme === 'dark' ? 'text-[#e2e8f0]' : 'text-[#1a1d27]'}`}
+                  className={`text-[13px] font-medium truncate ${isDark ? 'text-[#e8edf2]' : 'text-[#1a2733]'}`}
                 >
                   {user.name ?? 'Usuário'}
                 </div>
-                <div className="text-[11px] text-[#8892a4] truncate">
+                <div className="text-[11px] text-[#8fa3b8] truncate">
                   {user.email ?? ''}
                 </div>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] border transition-colors cursor-pointer ${
-                theme === 'dark'
-                  ? 'border-[#2a2f45] text-[#8892a4] hover:bg-[#22263a] hover:text-[#e2e8f0]'
-                  : 'border-[#d0d4e8] text-[#5a6378] hover:bg-[#e8eaf2] hover:text-[#1a1d27]'
+              className={`w-full flex items-center gap-2 px-3 py-2 rounded text-[12px] border transition-colors cursor-pointer ${
+                isDark
+                  ? 'border-[#2a3b4d] text-[#8fa3b8] hover:bg-[#1e2c3a] hover:text-[#e8edf2]'
+                  : 'border-[#d5dee6] text-[#5c7080] hover:bg-[#e7edf3] hover:text-[#1a2733]'
               }`}
             >
-              <span>↩</span> {t('auth.logout')}
+              <LogOut size={14} strokeWidth={1.75} />
+              {t('auth.logout')}
             </button>
           </div>
         </aside>
@@ -252,29 +274,44 @@ export default function AppLayout({
         <div className="flex-1 flex flex-col min-w-0">
           {/* Topbar */}
           <header
-            className={`h-14 flex items-center justify-between px-6 border-b shrink-0 ${
-              theme === 'dark'
-                ? 'bg-[#1a1d27] border-[#2a2f45]'
-                : 'bg-white border-[#d0d4e8]'
+            className={`relative h-14 flex items-center justify-between px-6 border-b shrink-0 overflow-hidden ${
+              isDark
+                ? 'bg-[#16212c] border-[#2a3b4d]'
+                : 'bg-white border-[#d5dee6]'
             }`}
           >
-            <div>
+            <HeaderDotsPattern
+              color={dotColor}
+              opacity1={dotOpacity1}
+              opacity2={dotOpacity2}
+              opacity3={dotOpacity3}
+              startX={260}
+            />
+
+            {/* Título — sem caixa de fundo; a área já está livre de pontos */}
+            <div className="relative z-10">
               <h1
-                className={`text-[16px] font-semibold m-0 ${theme === 'dark' ? 'text-[#e2e8f0]' : 'text-[#1a1d27]'}`}
+                className={`text-[18px] font-semibold font-['Inter'] m-0 ${
+                  isDark ? 'text-[#e8edf2]' : 'text-[#1a2733]'
+                }`}
               >
                 {title}
               </h1>
               {subtitle && (
-                <div className="text-[12px] text-[#8892a4] mt-0.5">
+                <div
+                  className={`text-[13px] font-medium font-['Inter'] mt-0.5 ${
+                    isDark ? 'text-[#b0c4d9]' : 'text-[#5c7080]'
+                  }`}
+                >
                   {subtitle}
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              {/* Lang switcher */}
+
+            <div className="relative z-10 flex items-center gap-2">
               <div
-                className={`flex rounded-lg border overflow-hidden ${
-                  theme === 'dark' ? 'border-[#2a2f45]' : 'border-[#d0d4e8]'
+                className={`flex rounded border overflow-hidden ${
+                  isDark ? 'border-[#2a3b4d]' : 'border-[#d5dee6]'
                 }`}
               >
                 {langs.map((l) => (
@@ -283,27 +320,30 @@ export default function AppLayout({
                     onClick={() => switchLang(l.code)}
                     className={`px-3 py-1.5 text-[11px] font-semibold cursor-pointer transition-colors ${
                       lang === l.code
-                        ? 'bg-[#4f8cff] text-white'
-                        : theme === 'dark'
-                          ? 'bg-[#22263a] text-[#8892a4] hover:text-[#e2e8f0]'
-                          : 'bg-[#e8eaf2] text-[#5a6378] hover:text-[#1a1d27]'
+                        ? 'bg-[#2563a8] text-white'
+                        : isDark
+                          ? 'bg-[#1e2c3a] text-[#8fa3b8] hover:text-[#e8edf2]'
+                          : 'bg-[#e7edf3] text-[#5c7080] hover:text-[#1a2733]'
                     }`}
                   >
                     {l.label}
                   </button>
                 ))}
               </div>
-
-              {/* Theme toggle */}
               <button
                 onClick={toggle}
-                className={`px-3 py-1.5 rounded-lg text-[12px] border cursor-pointer transition-colors ${
-                  theme === 'dark'
-                    ? 'bg-[#22263a] border-[#2a2f45] text-[#e2e8f0] hover:bg-[#2a2f45]'
-                    : 'bg-[#e8eaf2] border-[#d0d4e8] text-[#1a1d27] hover:bg-[#d0d4e8]'
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[12px] border cursor-pointer transition-colors ${
+                  isDark
+                    ? 'bg-[#1e2c3a] border-[#2a3b4d] text-[#e8edf2] hover:bg-[#24374a]'
+                    : 'bg-[#e7edf3] border-[#d5dee6] text-[#1a2733] hover:bg-[#dbe4ec]'
                 }`}
               >
-                {theme === 'dark' ? t('theme.light') : t('theme.dark')}
+                {isDark ? (
+                  <Sun size={14} strokeWidth={1.75} />
+                ) : (
+                  <Moon size={14} strokeWidth={1.75} />
+                )}
+                {isDark ? t('theme.light') : t('theme.dark')}
               </button>
             </div>
           </header>
@@ -312,6 +352,7 @@ export default function AppLayout({
           <main className="flex-1 overflow-y-auto p-6">{children}</main>
         </div>
       </div>
+      <AccessibilityWidget />
     </ThemeContext.Provider>
   );
 }

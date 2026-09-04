@@ -12,11 +12,12 @@ const langs = [
 
 type Theme = 'dark' | 'light';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('admin@erp.com');
-  const [password, setPassword] = useState('admin123');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [lang, setLang] = useState(
@@ -48,16 +49,14 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     authApi
-      .login(email, password)
+      .register(email, password, name)
       .then((res) => {
         localStorage.setItem('token', res.data.access_token);
         localStorage.setItem('user', JSON.stringify(res.data.user));
-        // Roteamento por papel: admin vai para o Dashboard técnico,
-        // usuário comum vai para a tela amigável.
-        navigate(res.data.user.role === 'admin' ? '/' : '/inicio');
+        navigate('/inicio');
       })
       .catch((err) =>
-        setError(err.response?.data?.message || t('auth.loginError')),
+        setError(err.response?.data?.message || t('auth.registerError')),
       )
       .finally(() => setLoading(false));
   };
@@ -125,7 +124,7 @@ export default function LoginPage() {
         </div>
       </header>
 
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center py-10">
         <div
           className={`rounded shadow-sm border w-[360px] p-8 ${
             isDark
@@ -140,18 +139,44 @@ export default function LoginPage() {
           </div>
 
           <h2
-            className={`text-[18px] font-semibold font-['Inter'] text-center mb-6 ${
+            className={`text-[18px] font-semibold font-['Inter'] text-center mb-1 ${
               isDark ? 'text-[#e8edf2]' : 'text-[#1a2733]'
             }`}
           >
-            TerreiroAcolhe
+            {t('auth.createAccount')}
           </h2>
+          <p
+            className={`text-[12px] text-center mb-6 ${
+              isDark ? 'text-[#8fa3b8]' : 'text-[#5c7080]'
+            }`}
+          >
+            {t('auth.createAccountSubtitle')}
+          </p>
 
           {error && (
             <p className="text-red-500 text-[13px] mb-4 text-center">{error}</p>
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div>
+              <label
+                className={`text-[12px] font-medium ${isDark ? 'text-[#8fa3b8]' : 'text-[#5c7080]'}`}
+              >
+                {t('auth.name')}
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                minLength={2}
+                className={`w-full px-3 py-2 mt-1 rounded border text-sm focus:outline-none focus:ring-1 focus:ring-[#2563a8] ${
+                  isDark
+                    ? 'bg-[#1e2c3a] border-[#2a3b4d] text-[#e8edf2]'
+                    : 'bg-white border-[#d5dee6] text-[#1a2733]'
+                }`}
+              />
+            </div>
             <div>
               <label
                 className={`text-[12px] font-medium ${isDark ? 'text-[#8fa3b8]' : 'text-[#5c7080]'}`}
@@ -181,6 +206,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={4}
                 className={`w-full px-3 py-2 mt-1 rounded border text-sm focus:outline-none focus:ring-1 focus:ring-[#2563a8] ${
                   isDark
                     ? 'bg-[#1e2c3a] border-[#2a3b4d] text-[#e8edf2]'
@@ -193,21 +219,17 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-2.5 rounded bg-[#2563a8] hover:bg-[#1f5089] disabled:bg-[#8fa3b8] text-white text-sm font-semibold cursor-pointer transition-colors mt-1"
             >
-              {loading ? '...' : t('auth.login')}
+              {loading ? '...' : t('auth.createAccount')}
             </button>
           </form>
 
           <p
-            className={`text-center text-[12px] mt-4 ${isDark ? 'text-[#8fa3b8]' : 'text-[#5c7080]'}`}
+            className={`text-center text-[12px] mt-5 ${isDark ? 'text-[#8fa3b8]' : 'text-[#5c7080]'}`}
           >
-            {t('auth.noAccount')}{' '}
-            <Link to="/register" className="text-[#3b82c4] hover:underline">
-              {t('auth.createAccount')}
+            {t('auth.alreadyHaveAccount')}{' '}
+            <Link to="/login" className="text-[#3b82c4] hover:underline">
+              {t('auth.login')}
             </Link>
-          </p>
-
-          <p className="text-center text-[12px] mt-5 text-[#8fa3b8]">
-            {t('auth.demo')}
           </p>
         </div>
       </div>

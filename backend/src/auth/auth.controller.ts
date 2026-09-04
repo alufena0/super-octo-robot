@@ -35,6 +35,9 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto.email, dto.password, dto.name);
+    await this.authService.register(dto.email, dto.password, dto.name);
+    // Após cadastrar, já faz login automático para retornar o token —
+    // assim o frontend não precisa de uma segunda chamada.
+    return this.authService.login(dto.email, dto.password);
   }
 }

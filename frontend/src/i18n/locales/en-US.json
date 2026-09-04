@@ -12,11 +12,21 @@
     "errorDelete": "Error deleting: {{message}}",
     "errorConnect": "Failed to connect to the backend."
   },
+  "a11y": {
+    "title": "Accessibility",
+    "fontSize": "Text size",
+    "increase": "Increase text size",
+    "decrease": "Decrease text size",
+    "resetFont": "Reset to default",
+    "narration": "Read aloud",
+    "readPage": "Read this page",
+    "stopReading": "Stop reading"
+  },
   "nav": {
     "dashboard": "Dashboard",
-    "products": "Products",
-    "sales": "Sales",
-    "financial": "Financial",
+    "relatos": "Reports",
+    "encaminhamentos": "Referrals",
+    "comunidades": "Communities",
     "reports": "Reports",
     "settings": "Settings",
     "sections": {
@@ -35,77 +45,101 @@
     "email": "Email",
     "password": "Password",
     "loginError": "Invalid email or password",
-    "demo": "Demo: admin@erp.com / admin123"
+    "demo": "Demo: admin@erp.com / admin123",
+    "registerError": "Could not create account",
+    "createAccount": "Create account",
+    "createAccountSubtitle": "Sign up to submit reports",
+    "alreadyHaveAccount": "Already have an account?",
+    "noAccount": "Don't have an account?",
+    "name": "Name"
   },
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "System overview",
     "kpi": {
-      "totalProducts": "Total Products",
-      "stockValue": "Stock Value",
-      "lowStock": "Low Stock",
-      "avgMargin": "Avg. Margin",
-      "categories": "{{count}} category",
-      "categories_other": "{{count}} categories",
+      "total": "Total Reports",
+      "abertos": "Open Reports",
+      "encaminhados": "Referred",
+      "resolvidos": "Resolved",
+      "tiposUnicos": "{{count}} violation type",
+      "tiposUnicos_other": "{{count}} violation types",
       "registered": "{{count}} registered",
-      "costPrice": "cost price",
-      "currentStock": "current stock",
-      "belowMin": "below minimum",
-      "allOk": "all good",
       "needsAttention": "{{count}} needs attention",
       "needsAttention_other": "{{count}} need attention",
-      "priceFormula": "price – cost / price",
-      "goalReached": "▲ goal reached",
-      "goalMissed": "▼ goal: 45%"
+      "allOk": "all up to date",
+      "aguardandoTriagem": "awaiting triage",
+      "emEncaminhamento": "being referred",
+      "casosFechados": "closed cases"
     },
-    "recentProducts": "Recent Products",
-    "viewAll": "View all →",
-    "alerts": "Alerts",
-    "activeAlerts": "{{count}} active",
-    "noAlerts": "No alerts at the moment.",
-    "noProducts": "No products registered yet.",
-    "alertCritical": "{{name}} — critical stock",
-    "alertUnits": "{{quantity}} units · minimum: {{min}}"
+    "recentRelatos": "Recent reports",
+    "viewAll": "View all",
+    "alerts": "Pending",
+    "activeAlerts": "{{count}} pending",
+    "activeAlerts_other": "{{count}} pending",
+    "noAlerts": "No pending reports at the moment.",
+    "noRelatos": "No reports registered yet.",
+    "alertPendente": "{{comunidade}} — {{tipo}}",
+    "alertData": "Occurred on {{data}}"
   },
-  "products": {
-    "title": "Products",
-    "subtitle": "Inventory management",
-    "total": "Total products: <strong>{{count}}</strong>",
-    "newProduct": "+ New Product",
-    "newProductTitle": "New Product",
-    "editProductTitle": "Edit Product",
-    "noProducts": "No products registered yet.",
+  "relatos": {
+    "title": "Reports",
+    "subtitle": "Record of religious intolerance incidents",
+    "total": "Total reports: {{count}}",
+    "totalLabel": "Total reports:",
+    "newRelato": "+ New Report",
+    "newRelatoTitle": "New Report",
+    "editRelatoTitle": "Edit Report",
+    "noRelatos": "No reports registered yet.",
+    "wizard": {
+      "intro": "Fill in the information step by step. You can review everything before submitting.",
+      "step1": "Identification",
+      "step2": "The incident",
+      "step3": "Description",
+      "step4": "Review",
+      "comunidadePlaceholder": "Name of the terreiro or community",
+      "localPlaceholder": "E.g.: Health center, ER, Hospital...",
+      "tipoPlaceholder": "E.g.: Refusal of care, verbal abuse...",
+      "descricaoPlaceholder": "Describe what happened in as much detail as possible.",
+      "reviewIntro": "Review the information before submitting. You can go back to correct any field.",
+      "back": "Back",
+      "next": "Next",
+      "submit": "Submit report"
+    },
     "table": {
       "id": "ID",
-      "name": "Name",
-      "sku": "SKU",
-      "price": "Price",
-      "qty": "Qty",
-      "min": "Min",
-      "category": "Category",
+      "comunidade": "Community",
+      "tipoViolacao": "Type",
+      "local": "Location",
+      "data": "Date",
+      "status": "Status",
       "actions": "Actions"
     },
     "form": {
-      "name": "Name *",
-      "sku": "SKU *",
-      "salePrice": "Sale Price *",
-      "cost": "Cost *",
-      "quantity": "Quantity *",
-      "minStock": "Min. Stock *",
-      "category": "Category",
-      "description": "Description"
+      "comunidade": "Community/Terreiro *",
+      "tipoViolacao": "Violation Type *",
+      "local": "Incident Location *",
+      "dataOcorrido": "Incident Date *",
+      "status": "Status",
+      "descricao": "Description *"
     },
-    "stock": {
-      "ok": "● OK {{qty}}",
-      "low": "● Low {{qty}}",
-      "min": "● Min {{qty}}",
-      "zero": "● Out of stock",
-      "badge": "LOW STOCK"
+    "status": {
+      "novo": "New",
+      "em_analise": "Under Review",
+      "encaminhado": "Referred",
+      "resolvido": "Resolved"
     },
     "pagination": {
-      "previous": "← Previous",
-      "next": "Next →",
+      "previous": "Previous",
+      "next": "Next",
       "info": "Page {{page}} of {{total}}"
     }
+  },
+  "inicio": {
+    "greeting": "Hello, {{name}}",
+    "subtitle": "Welcome to TerreiroAcolhe",
+    "newReportTitle": "Submit a new report",
+    "newReportDescription": "Tell us what happened. Your information helps the support network act.",
+    "myReports": "My reports",
+    "noReportsYet": "You haven't submitted any reports yet."
   }
 }
